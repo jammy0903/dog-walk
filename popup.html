@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>강아지 산책</title>
+    <style>
+      :root {
+        --ink: #4a4036;
+        --brown: #b07a4a;
+        --paper: #fbf6ee;
+        --line: #ece2d4;
+        --off: #c4b9a8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        width: 244px;
+        font-family: system-ui, "Segoe UI", sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        padding: 14px 14px 16px;
+        user-select: none;
+      }
+      h1 { font-size: 14px; margin: 0 0 2px; letter-spacing: .5px; }
+      .sub { font-size: 11px; color: #a99c8c; margin: 0 0 14px; }
+
+      /* ON/OFF 토글 행 */
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+      }
+      .row .label { font-size: 13px; font-weight: 600; }
+      .row .state { font-size: 11px; color: #a99c8c; margin-top: 2px; }
+
+      /* 스위치 */
+      .sw {
+        position: relative;
+        width: 50px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--off);
+        border: none;
+        cursor: pointer;
+        transition: background .18s ease;
+        flex: none;
+      }
+      .sw[aria-pressed="true"] { background: var(--brown); }
+      .sw::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,.25);
+        transition: transform .18s ease;
+      }
+      .sw[aria-pressed="true"]::after { transform: translateX(22px); }
+
+      .note { font-size: 11px; color: #a99c8c; margin: 10px 2px 14px; line-height: 1.5; }
+
+      .open {
+        width: 100%;
+        padding: 11px;
+        border: none;
+        border-radius: 12px;
+        background: var(--brown);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .open:active { transform: translateY(1px); }
+    </style>
+  </head>
+  <body>
+    <h1>🐕 강아지 산책</h1>
+    <p class="sub">키 한 글자 = 한 걸음</p>
+
+    <div class="row">
+      <div>
+        <div class="label">강아지 표시</div>
+        <div class="state" id="state">켜짐</div>
+      </div>
+      <button class="sw" id="toggle" aria-pressed="true" aria-label="강아지 표시 토글"></button>
+    </div>
+
+    <p class="note">끄면 강아지만 잠시 사라져요. <b>걸음수는 그대로 계속 쌓입니다.</b> 다시 켜면 이어서 걸어요.</p>
+
+    <button class="open" id="openGame">🦴 게임 열기 (환전·상점)</button>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

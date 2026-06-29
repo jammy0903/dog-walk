@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "강아지 산책 — 타자로 걷기",
+  "version": "0.3.2",
+  "description": "키보드 한 글자가 강아지의 한 걸음. 걸음을 환전해 강아지를 수집. (한/영 지원) · Type to walk your dog, collect breeds. (KO/EN)",
+  "permissions": [
+    "storage",
+    "sidePanel"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "강아지 산책 (클릭=강아지 ON/OFF·게임 열기)",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "game.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png",
+    "192": "icons/icon-192.png",
+    "512": "icons/icon-512.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*.webp"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

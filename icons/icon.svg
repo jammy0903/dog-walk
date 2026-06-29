@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#fbf3e6"/><stop offset="1" stop-color="#f1ddc6"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="44%" r="58%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".75"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e6e2"/><stop offset="1" stop-color="#b4bab4"/></linearGradient>
+    <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86ddee"/><stop offset="1" stop-color="#45bbd7"/></linearGradient>
+    <radialGradient id="tip"><stop offset="0" stop-color="#ffe7b2"/><stop offset="1" stop-color="#f0b86a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="heart" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#f59a9a"/><stop offset="1" stop-color="#db6a6a"/></radialGradient>
+  </defs>
+  <!-- 배경(풀블리드: 마스커블 안전) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="238" r="190" fill="url(#halo)"/>
+  <!-- 안테나 + 빛나는 끝 -->
+  <path d="M252 152 q-12 -32 8 -58" stroke="#aab0aa" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <circle cx="266" cy="86" r="34" fill="url(#tip)"/>
+  <circle cx="266" cy="86" r="13" fill="#f0b052"/>
+  <!-- 머리 -->
+  <rect x="148" y="150" width="216" height="198" rx="66" fill="url(#head)" stroke="#a7ada7" stroke-width="6"/>
+  <!-- 옆 볼트(귀) -->
+  <circle cx="148" cy="252" r="21" fill="#aeb4ae" stroke="#8f958f" stroke-width="5"/>
+  <circle cx="364" cy="252" r="21" fill="#aeb4ae" stroke="#8f958f" stroke-width="5"/>
+  <!-- 바이저 -->
+  <rect x="176" y="210" width="160" height="94" rx="47" fill="#34474b"/>
+  <!-- 눈(밝게) + 반짝 -->
+  <circle cx="221" cy="256" r="35" fill="url(#eye)"/>
+  <circle cx="291" cy="256" r="35" fill="url(#eye)"/>
+  <circle cx="208" cy="243" r="13" fill="#fff"/>
+  <circle cx="278" cy="243" r="13" fill="#fff"/>
+  <circle cx="231" cy="269" r="6.5" fill="#fff" opacity=".85"/>
+  <circle cx="301" cy="269" r="6.5" fill="#fff" opacity=".85"/>
+  <!-- 볼 홍조 -->
+  <ellipse cx="180" cy="320" rx="23" ry="13" fill="#eb9f9f" opacity=".55"/>
+  <ellipse cx="332" cy="320" rx="23" ry="13" fill="#eb9f9f" opacity=".55"/>
+  <!-- 미소 -->
+  <path d="M224 324 q32 24 64 0" stroke="#6a6258" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- 가슴의 하트 (AI→인간) -->
+  <path d="M256 372 c -13 -19 -44 -15 -44 9 c 0 20 28 35 44 47 c 16 -12 44 -27 44 -47 c 0 -24 -31 -28 -44 -9 z" fill="url(#heart)"/>
+  <path d="M238 380 q-3 6 1 12" stroke="#fff" stroke-width="4" fill="none" opacity=".55" stroke-linecap="round"/>
+</svg>

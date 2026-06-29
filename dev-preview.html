@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>강아지 산책 — 로컬 미리보기 (DEV)</title>
+    <style>
+      body { margin: 0; }
+      #__devbar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 2147483647;
+        background: #2f9e8f; color: #fff; font: 12px system-ui;
+        padding: 6px 12px; text-align: center;
+      }
+      #__panel {
+        max-width: 380px; margin: 38px auto 0;
+        border: 1px solid #e0d3bf; border-radius: 12px; overflow: hidden;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+      }
+    </style>
+    <script>
+      // ── 가짜 chrome.* (로컬 페이지에서 확장 코드를 그대로 돌리기 위한 shim) ──
+      // 확장 설치 없이 일반 웹페이지로 미리보기. DLP 우회 아님 — 그냥 로컬 웹페이지.
+      (function () {
+        const msgCbs = [];
+        const installedCbs = [];
+        const changedList = [];
+        function makeStore(ns) {
+          const P = "__shim_" + ns + "_";
+          const read = (k) => {
+            const v = localStorage.getItem(P + k);
+            return v == null ? undefined : JSON.parse(v);
+          };
+          return {
+            get(keys, cb) {
+              const out = {};
+              if (keys == null) {
+                for (let i = 0; i < localStorage.length; i++) {
+                  const lk = localStorage.key(i);
+                  if (lk.startsWith(P)) out[lk.slice(P.length)] = JSON.parse(localStorage.getItem(lk));
+                }
+              } else if (typeof keys === "string") {
+                const v = read(keys); if (v !== undefined) out[keys] = v;
+              } else if (Array.isArray(keys)) {
+                keys.forEach((k) => { const v = read(k); if (v !== undefined) out[k] = v; });
+              } else {
+                Object.keys(keys).forEach((k) => { const v = read(k); out[k] = v !== undefined ? v : keys[k]; });
+              }
+              if (cb) Promise.resolve().then(() => cb(out));
+              return Promise.resolve(out);
+            },
+            set(obj, cb) {
+              const changes = {};
+              Object.keys(obj).forEach((k) => {
+                const old = read(k);
+                localStorage.setItem(P + k, JSON.stringify(obj[k]));
+                changes[k] = { oldValue: old, newValue: obj[k] };
+              });
+              Promise.resolve().then(() => {
+                if (cb) cb();
+                changedList.forEach((f) => { try { f(changes, ns); } catch (e) { console.error(e); } });
+              });
+              return Promise.resolve();
+            },
+          };
+        }
+        window.chrome = {
+          runtime: {
+            getURL: (p) => p,
+            lastError: undefined,
+            sendMessage(msg, cb) {
+              let done = false;
+              const sr = (r) => { if (!done) { done = true; if (cb) Promise.resolve().then(() => cb(r)); } };
+              msgCbs.forEach((fn) => { try { fn(msg, {}, sr); } catch (e) { console.error(e); } });
+            },
+            onMessage: { addListener: (fn) => msgCbs.push(fn) },
+            onInstalled: { addListener: (fn) => installedCbs.push(fn) },
+            onStartup: { addListener: () => {} },
+          },
+          storage: {
+            local: makeStore("local"),
+            sync: makeStore("sync"),
+            onChanged: { addListener: (fn) => changedList.push(fn) },
+          },
+          // sidePanel / windows 는 일부러 없음(확장 코드가 ?. 로 가드)
+        };
+        window.__fireInstalled = () =>
+          installedCbs.forEach((f) => { try { f(); } catch (e) { console.error(e); } });
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="__devbar">🐕 로컬 미리보기(DEV) · 이 페이지에서 아무 키나 쳐보세요 — 강아지가 걷습니다</div>
+    <div id="__panel"></div>
+
+    <script>
+      // game.html 을 그대로 가져와 마크업+스타일 재사용(코드 중복 없음).
+      (async () => {
+        try {
+          const html = await (await fetch("game.html")).text();
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          doc.querySelectorAll("style").forEach((s) => document.head.appendChild(s.cloneNode(true)));
+          const body = doc.body;
+          body.querySelectorAll("script").forEach((s) => s.remove());
+          document.getElementById("__panel").innerHTML = body.innerHTML;
+
+          // 확장과 같은 순서로 로드: background → (init) → content → game.
+          // ⚠️ 실제 확장은 background(SW)·game(패널)·content(페이지)가 서로 다른 컨텍스트라
+          //    전역이 안 겹친다. 여기선 한 페이지라 겹치므로 각 파일을 IIFE로 감싸 스코프 격리.
+          const loadScoped = async (src) => {
+            const code = await (await fetch(src)).text();
+            const el = document.createElement("script");
+            el.textContent = "(function(){\n" + code + "\n})();\n//# sourceURL=" + src;
+            document.body.appendChild(el); // 인라인 스크립트는 동기 실행
+          };
+          await loadScoped("background.js");
+          window.__fireInstalled(); // onInstalled 초기화
+          await loadScoped("content.js"); // 페이지 위 산책 펫
+          await loadScoped("game.js"); // 패널 게임
+        } catch (e) {
+          document.getElementById("__panel").innerHTML =
+            '<p style="padding:20px;font:13px system-ui;color:#b00">로컬 서버로 열어야 해요.<br>' +
+            "터미널: <code>cd extension &amp;&amp; python3 -m http.server 8000</code><br>" +
+            "그다음 <code>http://localhost:8000/dev-preview.html</code> 접속.<br><br>" +
+            "(file:// 직접 열기는 fetch 차단됨)</p>";
+          console.error(e);
+        }
+      })();
+    </script>
+  </body>
+</html>
