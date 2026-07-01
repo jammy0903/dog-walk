@@ -16,23 +16,32 @@
 
   // 디코드된 프레임 보관(GC 방지 → src 교체 시 항상 캐시에서 즉시 표시)
   let preloadCache = [];
+  // src → "W / H". 프레임마다 자연 종횡비가 다르므로(특히 '재미': 1.06~1.53)
+  // '지금 보여주는 그 프레임'의 비율로 박스를 맞춰야 늘어남/찌부가 없다.
+  let ratioBySrc = Object.create(null);
 
-  // 자연 크기를 확보하면 강아지 종횡비를 고정한다.
-  // 이렇게 해두면 walk 프레임 교체 직후 아직 디코드 안 된 찰나에도 박스 가로폭이
-  // 0으로 붕괴하지 않는다(= 벽에서 '1자'로 찌부되는 현상 방지).
-  function lockAspect(im) {
-    if (img && im && im.naturalWidth && im.naturalHeight) {
-      img.style.aspectRatio = im.naturalWidth + " / " + im.naturalHeight;
-    }
+  // <img>에 프레임을 건다. 그 프레임의 종횡비를 알면 박스도 즉시 그 비율로 고정한다.
+  // 이렇게 프레임별로 맞춰야 object-fit:fill이 다른 비율 이미지를 뭉개는 일이 없고,
+  // 아직 디코드 안 된 찰나에도 박스 가로폭이 0으로 붕괴하지 않는다('1자' 찌부 방지).
+  function showFrame(src) {
+    if (!img) return;
+    img.src = src;
+    const r = ratioBySrc[src];
+    if (r) img.style.aspectRatio = r;
   }
 
-  // 현재 강아지의 REST+WALK 프레임을 미리 받아 디코드까지 강제.
+  // 현재 강아지의 REST+WALK 프레임을 미리 받아 디코드까지 강제 + 프레임별 종횡비 기록.
   function preloadFrames() {
     preloadCache = [REST, ...WALK].map((src) => {
       const im = new Image();
       im.src = src;
       (im.decode ? im.decode() : Promise.resolve())
-        .then(() => lockAspect(im))
+        .then(() => {
+          if (!im.naturalWidth || !im.naturalHeight) return;
+          ratioBySrc[src] = im.naturalWidth + " / " + im.naturalHeight;
+          // 지금 화면에 떠 있는 프레임이면 비율도 곧바로 반영
+          if (img && img.src === src) img.style.aspectRatio = ratioBySrc[src];
+        })
         .catch(() => {});
       return im;
     });
@@ -44,7 +53,7 @@
     REST = url(`assets/${p}-rest.webp`);
     WALK = [1, 2, 3, 4].map((n) => url(`assets/${p}-walk${n}.webp`));
     preloadFrames(); // 새 강아지 프레임 미리 디코드 + 종횡비 갱신
-    if (img && !walking) img.src = REST;
+    if (img && !walking) showFrame(REST);
   }
 
   let wrap = null,
@@ -106,9 +115,20 @@
     }
   }
 
+  // 인쇄물엔 강아지가 안 찍히게 한다. 화면에선 보이지만 @media print에서만 숨김.
+  // (토글 상태와 무관하게 항상 적용 = '안보이게하기'를 안 해도 프린트엔 안 나옴)
+  function injectPrintHide() {
+    if (document.getElementById("__aingan_dog_pstyle")) return;
+    const st = document.createElement("style");
+    st.id = "__aingan_dog_pstyle";
+    st.textContent = "@media print{#__aingan_dog{display:none!important}}";
+    (document.head || document.documentElement).appendChild(st);
+  }
+
   function makePet() {
     if (!TOP || wrap || !document.body) return;
     document.getElementById("__aingan_dog")?.remove(); // 옛/중복 인스턴스 잔재(확장 리로드 등) 제거 → 강아지 한 마리만
+    injectPrintHide(); // 인쇄 시 강아지 숨김 규칙 주입
     wrap = document.createElement("div");
     wrap.id = "__aingan_dog";
     // 발(이미지 하단 중앙)이 (left,top)에 오도록 translate(-50%,-100%)
@@ -116,11 +136,14 @@
       "position:fixed;left:0;top:0;z-index:2147483600;pointer-events:none;" +
       "transform:translate(-50%,-100%);will-change:left,top;";
     img = document.createElement("img");
-    img.src = REST;
     img.draggable = false;
+    // object-fit:contain + 하단 정렬 = 박스 비율이 프레임과 잠깐 어긋나도
+    // 이미지를 뭉개지 않고 여백을 두며, 발은 항상 바닥(하단 중앙)에 붙는다.
     img.style.cssText =
-      "display:block;width:auto;transform-origin:50% 100%;filter:drop-shadow(0 5px 4px rgba(0,0,0,.18));";
+      "display:block;width:auto;object-fit:contain;object-position:50% 100%;" +
+      "transform-origin:50% 100%;filter:drop-shadow(0 5px 4px rgba(0,0,0,.18));";
     img.style.height = petSize + "px";
+    showFrame(REST); // 첫 프레임(비율은 preload 디코드 시 반영)
     wrap.appendChild(img);
     document.body.appendChild(wrap);
     preloadFrames(); // 기본(치즈) 강아지 프레임도 미리 디코드 + 종횡비 고정
@@ -175,7 +198,7 @@
     if (!wrap) return;
     walking = true;
     phase = (phase + 1) % SEQ.length;
-    img.src = WALK[SEQ[phase]];
+    showFrame(WALK[SEQ[phase]]);
     advance();
     place();
     img.animate(
@@ -189,7 +212,7 @@
     clearTimeout(restTimer);
     restTimer = setTimeout(() => {
       walking = false;
-      if (img) img.src = REST; // 그 자리(벽이든 천장이든)에 쉼
+      showFrame(REST); // 그 자리(벽이든 천장이든)에 쉼
     }, 600);
   }
 
