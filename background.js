@@ -13,11 +13,13 @@ const DOGS = [
   { id: "corgi", name: "웰시코기", nameEn: "Welsh Corgi", price: 1500 },
   { id: "chihuahua", name: "치와와", nameEn: "Chihuahua", price: 2500 },
   { id: "poodle", name: "토이푸들", nameEn: "Toy Poodle", price: 4000 },
+  { id: "dachshund", name: "닥스훈트", nameEn: "Dachshund", price: 5000 },
   { id: "bulldog", name: "프렌치불독", nameEn: "French Bulldog", price: 6000 },
   { id: "border", name: "보더콜리", nameEn: "Border Collie", price: 9000 },
   { id: "chow", name: "차우차우", nameEn: "Chow Chow", price: 13000 },
   { id: "ig", name: "이탈리안 그레이하운드", nameEn: "Italian Greyhound", price: 18000 },
   { id: "golden", name: "골든리트리버", nameEn: "Golden Retriever", price: 25000 },
+  { id: "jaemi", name: "재미", nameEn: "Jaemi", price: 30000 },
 ];
 const DOGIDS = DOGS.map((d) => d.id);
 const priceOf = (id) => (DOGS.find((d) => d.id === id) || {}).price;

@@ -14,11 +14,36 @@
     REST = url("assets/dog-rest.webp"),
     WALK = [1, 2, 3, 4].map((n) => url(`assets/dog-walk${n}.webp`));
 
+  // 디코드된 프레임 보관(GC 방지 → src 교체 시 항상 캐시에서 즉시 표시)
+  let preloadCache = [];
+
+  // 자연 크기를 확보하면 강아지 종횡비를 고정한다.
+  // 이렇게 해두면 walk 프레임 교체 직후 아직 디코드 안 된 찰나에도 박스 가로폭이
+  // 0으로 붕괴하지 않는다(= 벽에서 '1자'로 찌부되는 현상 방지).
+  function lockAspect(im) {
+    if (img && im && im.naturalWidth && im.naturalHeight) {
+      img.style.aspectRatio = im.naturalWidth + " / " + im.naturalHeight;
+    }
+  }
+
+  // 현재 강아지의 REST+WALK 프레임을 미리 받아 디코드까지 강제.
+  function preloadFrames() {
+    preloadCache = [REST, ...WALK].map((src) => {
+      const im = new Image();
+      im.src = src;
+      (im.decode ? im.decode() : Promise.resolve())
+        .then(() => lockAspect(im))
+        .catch(() => {});
+      return im;
+    });
+  }
+
   function setDogSprites(id) {
     selDog = id || "cheese";
     const p = dogPrefix(selDog);
     REST = url(`assets/${p}-rest.webp`);
     WALK = [1, 2, 3, 4].map((n) => url(`assets/${p}-walk${n}.webp`));
+    preloadFrames(); // 새 강아지 프레임 미리 디코드 + 종횡비 갱신
     if (img && !walking) img.src = REST;
   }
 
@@ -98,6 +123,7 @@
     img.style.height = petSize + "px";
     wrap.appendChild(img);
     document.body.appendChild(wrap);
+    preloadFrames(); // 기본(치즈) 강아지 프레임도 미리 디코드 + 종횡비 고정
     place();
     recalcHide(); // 만들 때 이미 동영상/전체화면이면 곧바로 숨김
   }

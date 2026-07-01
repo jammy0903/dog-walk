@@ -162,8 +162,8 @@ let LANG = "ko";
 // 품종 영어명 폴백(id 기준) — background SW가 옛 코드(nameEn 없는 DOGS)를 줘도 영어 표시 보장
 const NAME_EN = {
   cheese:"Cheese Shiba", cream:"Cream Shiba", sesame:"Sesame Shiba", corgi:"Welsh Corgi",
-  chihuahua:"Chihuahua", poodle:"Toy Poodle", bulldog:"French Bulldog", border:"Border Collie",
-  chow:"Chow Chow", ig:"Italian Greyhound", golden:"Golden Retriever",
+  chihuahua:"Chihuahua", poodle:"Toy Poodle", dachshund:"Dachshund", bulldog:"French Bulldog", border:"Border Collie",
+  chow:"Chow Chow", ig:"Italian Greyhound", golden:"Golden Retriever", jaemi:"Jaemi",
 };
 const I18N = {
   ko: { title:"강아지 산책", sub:"타자 한 글자·마우스 클릭 = 한 걸음", steps:"걸음", keys:"글자",
