@@ -131,29 +131,9 @@ $("petSize").addEventListener("input", (e) => {
 });
 chrome.storage.local.get("petSize", ({ petSize }) => paintPetSize(petSize || 92));
 
-// ── 사이드패널 무대 배경 (꽃밭/도로/엑셀/크롬) ──
-const BG = ["flower", "road", "excel", "chrome"];
-const BODY_TINT = { excel: "#ffffff", chrome: "#f1f3f4" };
-function applyBg(name) {
-  if (!BG.includes(name)) name = "flower";
-  const st = document.querySelector(".stage");
-  if (st) {
-    BG.forEach((b) => st.classList.remove("bg-" + b));
-    st.classList.add("bg-" + name);
-  }
-  document.body.style.background = BODY_TINT[name] || "";
-  [...$("bgSeg").children].forEach((b) => b.classList.toggle("on", b.dataset.bg === name));
-}
-$("bgSeg").addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (b && b.dataset.bg) chrome.storage.local.set({ bg: b.dataset.bg });
-});
-chrome.storage.local.get("bg", ({ bg }) => applyBg(bg || "flower"));
-
 chrome.storage.onChanged.addListener((c, area) => {
   if (area !== "local") return;
   if (c.petSize) paintPetSize(c.petSize.newValue || 92);
-  if (c.bg) applyBg(c.bg.newValue);
   if (c.lang) applyLang(c.lang.newValue || "ko");
 });
 
@@ -168,12 +148,10 @@ const NAME_EN = {
 const I18N = {
   ko: { title:"강아지 산책", sub:"타자 한 글자·마우스 클릭 = 한 걸음", steps:"걸음", keys:"글자",
     exchange:"걸음 → 🦴 환전", shop:"🐕 강아지 상점", petSize:"페이지 강아지 크기",
-    bg:"배경", bgFlower:"꽃밭", bgRoad:"도로", bgExcel:"엑셀", bgChrome:"크롬",
     cloud:"☁ 구글 계정에 자동 저장 (기기끼리 동기화)",
     walking:"산책 중", select:"선택", adopt:"입양" },
   en: { title:"Dog Walk", sub:"One key or click = one step", steps:"steps", keys:"keys",
     exchange:"Steps → 🦴 Exchange", shop:"🐕 Dog Shop", petSize:"On-page dog size",
-    bg:"Background", bgFlower:"Flowers", bgRoad:"Road", bgExcel:"Excel", bgChrome:"Chrome",
     cloud:"☁ Auto-saved to your Google account (synced across devices)",
     walking:"Walking", select:"Select", adopt:"Adopt" },
 };

@@ -49,64 +49,16 @@
         filter: drop-shadow(0 6px 5px rgba(0, 0, 0, 0.12));
       }
 
-      /* ── 배경 무대 테마 (사이드패널 전용 모드에서 선택) ── */
-      .stage.bg-flower {
+      /* 무대 배경(꽃밭) — 고정 */
+      .stage {
         background: linear-gradient(180deg, #cdeeff 0%, #e8f8ff 52%, #7ec850 52%, #5fb33f 100%);
       }
-      .stage.bg-flower::after {
+      .stage::after {
         content: "🌷      🌼       🌸      🌻      🌷";
         position: absolute;
         bottom: 2px; left: 0; right: 0;
         text-align: center;
         font-size: 16px;
-        z-index: 0;
-      }
-      .stage.bg-road {
-        background: linear-gradient(180deg, #dfe7ee 0%, #cfd8df 40%, #70767d 40%, #565c63 100%);
-      }
-      .stage.bg-road::after {
-        content: "";
-        position: absolute;
-        left: 0; right: 0; bottom: 16px; height: 4px;
-        background: repeating-linear-gradient(90deg, #f4d23a 0 22px, transparent 22px 42px);
-        z-index: 0;
-      }
-      .stage.bg-excel {
-        background:
-          repeating-linear-gradient(180deg, transparent 0 23px, #dce0e6 23px 24px),
-          repeating-linear-gradient(90deg, transparent 0 39px, #dce0e6 39px 40px),
-          #fff;
-      }
-      .stage.bg-excel::before {
-        content: "A      B      C      D      E";
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 18px;
-        background: #f1f3f4;
-        border-bottom: 1px solid #c8ccd2;
-        font: 11px ui-monospace, monospace;
-        color: #8a8f96;
-        line-height: 18px;
-        padding-left: 26px;
-        z-index: 0;
-      }
-      .stage.bg-chrome {
-        background: #f1f3f4;
-      }
-      body[data-lang="en"] .stage.bg-chrome::before { content: "🔍  Search or enter URL"; }
-      .stage.bg-chrome::before {
-        content: "🔍  검색어 또는 URL 입력";
-        position: absolute;
-        top: 20px; left: 50%;
-        transform: translateX(-50%);
-        width: 80%; height: 32px;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
-        font: 12px system-ui;
-        color: #9aa0a6;
-        display: flex;
-        align-items: center;
-        padding-left: 16px;
         z-index: 0;
       }
       .dog.breath {
@@ -176,9 +128,6 @@
       .item button.eq { background: var(--brown); color: #fff; border-color: var(--brown); }
 
       .settings { margin-top: 26px; font-size: 11px; color: #a99c8c; }
-      .settings .seg { display: inline-flex; border: 1px solid #e0d3bf; border-radius: 999px; overflow: hidden; margin-top: 6px; }
-      .settings .seg button { border: 0; padding: 6px 14px; }
-      .settings .seg button.on { background: var(--brown); color: #fff; }
       .cloud { margin-top: 12px; font-size: 11px; color: var(--brown); }
       /* 언어 토글 (우상단) */
       #langToggle { position: absolute; top: 10px; right: 12px; z-index: 5;
@@ -216,15 +165,6 @@
         <div style="margin-top: 6px">
           <input type="range" id="petSize" min="40" max="200" step="4" style="width: 70%; vertical-align: middle" />
           <span id="petSizeVal" style="font-size: 11px; color: #a99c8c"></span>
-        </div>
-      </div>
-      <div id="bgPick" style="margin-top: 12px; display: none">
-        <span data-i18n="bg">배경</span>
-        <div class="seg" id="bgSeg">
-          <button data-bg="flower" data-i18n="bgFlower">꽃밭</button>
-          <button data-bg="road" data-i18n="bgRoad">도로</button>
-          <button data-bg="excel" data-i18n="bgExcel">엑셀</button>
-          <button data-bg="chrome" data-i18n="bgChrome">크롬</button>
         </div>
       </div>
       <div class="cloud" data-i18n="cloud">☁ 구글 계정에 자동 저장 (기기끼리 동기화)</div>

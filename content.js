@@ -10,6 +10,12 @@
   const SEQ = [0, 1, 2, 3, 2, 1]; // 핑퐁
   const dogPrefix = (id) => (id === "cheese" ? "dog" : "dog-" + id);
 
+  // 대부분의 종은 '오른쪽'을 바라보게 그려져 있고, 테두리 걷기·회전 로직도 그 전제로 짜였다.
+  // 재미는 원본이 '왼쪽'을 바라봐서 뒤로 걷는 것처럼 보였다 → 이 종만 좌우 반전(scaleX(-1))해
+  // 오른쪽을 보게 만든다. 여기 id를 추가하면 다른 좌향 종도 똑같이 뒤집을 수 있다.
+  const FLIP_DOGS = new Set(["jaemi"]);
+  const flipTf = () => (FLIP_DOGS.has(selDog) ? " scaleX(-1)" : "");
+
   let selDog = "cheese",
     REST = url("assets/dog-rest.webp"),
     WALK = [1, 2, 3, 4].map((n) => url(`assets/dog-walk${n}.webp`));
@@ -54,6 +60,7 @@
     WALK = [1, 2, 3, 4].map((n) => url(`assets/${p}-walk${n}.webp`));
     preloadFrames(); // 새 강아지 프레임 미리 디코드 + 종횡비 갱신
     if (img && !walking) showFrame(REST);
+    place(); // 종 변경 시 좌우반전(flip) 여부를 즉시 transform에 반영(img 없으면 no-op)
   }
 
   let wrap = null,
@@ -157,9 +164,14 @@
   }
 
   // 현재 면·진행도에서 발 좌표·회전각·면 길이
+  // ⚠️ innerWidth/innerHeight가 아니라 clientWidth/clientHeight를 쓴다.
+  // innerWidth는 세로 스크롤바 폭(~15px)까지 포함하므로, 오른쪽 벽 강아지를
+  // vw-4에 놓으면 몸 일부가 스크롤바 뒤로 가려져 '오른쪽에서만 작아 보이는' 버그가 났다.
+  // clientWidth/Height는 스크롤바를 뺀 '실제 보이는 영역'이라 강아지가 온전히 붙는다.
   function geom() {
-    const vw = window.innerWidth,
-      vh = window.innerHeight,
+    const de = document.documentElement,
+      vw = de.clientWidth || window.innerWidth,
+      vh = de.clientHeight || window.innerHeight,
       m = 4;
     switch (edge) {
       case "right": return { fx: vw - m, fy: vh - p, ang: -90, len: vh }; // 위로
@@ -176,7 +188,9 @@
     if (p > g.len) p = g.len;
     wrap.style.left = g.fx + "px";
     wrap.style.top = g.fy + "px";
-    img.style.transform = `rotate(${g.ang}deg)`;
+    // scaleX(-1)은 rotate 오른쪽(=먼저 적용)에 둬서 '스프라이트를 뒤집은 뒤 회전' 순서를 지킨다.
+    // → 좌향 종도 우향 종과 똑같은 회전 결과(발이 벽에 붙음)를 얻는다.
+    img.style.transform = `rotate(${g.ang}deg)` + flipTf();
   }
 
   function advance() {
@@ -201,11 +215,12 @@
     showFrame(WALK[SEQ[phase]]);
     advance();
     place();
+    const f = flipTf(); // 좌향 종은 회전 뒤 좌우반전(세로 뜀 translateY엔 영향 없음)
     img.animate(
       [
-        { transform: `rotate(${curAng}deg) translateY(0)` },
-        { transform: `rotate(${curAng}deg) translateY(-6px)` },
-        { transform: `rotate(${curAng}deg) translateY(0)` },
+        { transform: `rotate(${curAng}deg)${f} translateY(0)` },
+        { transform: `rotate(${curAng}deg)${f} translateY(-6px)` },
+        { transform: `rotate(${curAng}deg)${f} translateY(0)` },
       ],
       { duration: 220, easing: "ease-in-out" }
     );
