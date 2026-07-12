@@ -156,6 +156,7 @@
     preloadFrames(); // 기본(치즈) 강아지 프레임도 미리 디코드 + 종횡비 고정
     place();
     recalcHide(); // 만들 때 이미 동영상/전체화면이면 곧바로 숨김
+    applyVisibility(); // ⚠️ OFF 상태로 새로 로드된 페이지도 즉시 숨김(makePet은 기본 display로 생성됨)
   }
 
   function removePet() {
@@ -298,12 +299,17 @@
     if (g && g.selDog) setDogSprites(g.selDog);
     makePet(); // 만들되 applyVisibility가 petOn에 따라 표시 결정
   });
+  // 다른 기기에서 끈 상태(sync)면 이 탭도 반영 — 로컬 기본값(ON)이 계정 설정을 이기지 않게.
+  chrome.storage.sync.get("petOn", ({ petOn: po }) => {
+    if (po !== undefined) { petOn = po !== false; applyVisibility(); }
+  });
   chrome.storage.onChanged.addListener((c, area) => {
-    if (area !== "local") return;
-    if (c.petOn) {
-      petOn = c.petOn.newValue !== false; // 팝업에서 ON/OFF 바뀌면 즉시 반영
+    // petOn은 local(같은 브라우저 즉시)·sync(다른 기기) 어느 쪽에서 바뀌든 반영
+    if (c.petOn && (area === "local" || area === "sync")) {
+      petOn = c.petOn.newValue !== false;
       applyVisibility();
     }
+    if (area !== "local") return;
     if (c.petSize) setPetSize(c.petSize.newValue || 92);
     if (c.g && c.g.newValue && c.g.newValue.selDog !== selDog) {
       setDogSprites(c.g.newValue.selDog);

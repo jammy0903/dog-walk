@@ -220,7 +220,7 @@ function updateBadge(on) {
 }
 chrome.storage.local.get("petOn").then((o) => updateBadge(o.petOn !== false)).catch(() => {});
 chrome.storage.onChanged.addListener((c, area) => {
-  if (area === "local" && c.petOn) updateBadge(c.petOn.newValue !== false);
+  if (c.petOn && (area === "local" || area === "sync")) updateBadge(c.petOn.newValue !== false); // 같은 브라우저·다른 기기 모두 뱃지 동기화
   // 다른 컴퓨터의 진행이 sync로 뒤늦게 도착하면(설치 직후엔 몇 초~분 지연) 여기서 채택.
   // reconcile은 install/startup/최초입력 때만 돌기에, 지연 도착분은 이 리스너가 없으면 재시작까지 반영 안 됨.
   if (area === "sync" && c[KEY]) {

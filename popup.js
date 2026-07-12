@@ -15,7 +15,8 @@ chrome.storage.local.get("petOn", ({ petOn }) => render(petOn !== false));
 toggle.addEventListener("click", () => {
   const on = toggle.getAttribute("aria-pressed") !== "true"; // 다음 상태
   render(on);
-  chrome.storage.local.set({ petOn: on });
+  chrome.storage.local.set({ petOn: on }); // 로컬=즉시 반영(같은 브라우저 모든 탭)
+  chrome.storage.sync.set({ petOn: on }).catch(() => {}); // sync=다른 기기(계정)까지 반영
 });
 
 // 게임은 사이드패널로(기존 동작 유지). 버튼 클릭 = 유저 제스처라 open() 허용됨.

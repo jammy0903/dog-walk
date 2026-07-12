@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "강아지 산책 — 타자로 걷기",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "description": "키보드 한 글자가 강아지의 한 걸음. 걸음을 환전해 강아지를 수집. (한/영 지원) · Type to walk your dog, collect breeds. (KO/EN)",
   "permissions": [
     "storage",
