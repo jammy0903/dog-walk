@@ -99,7 +99,7 @@ async function reconcile() {
     const lt = local ? local.taps : -1; // 레코드 없음=-1(taps 0인 정상 레코드와 구분)
     const rt = remote ? remote.taps : -1;
     if (remote && rt > lt) await chrome.storage.local.set({ [KEY]: remote }); // 원격 채택(정규화본)
-    else if (local && lt > rt) await chrome.storage.sync.set({ [KEY]: local }).catch(() => {}); // 로컬을 sync로(정규화본=오염 정리)
+    else if (local && lt > rt && lt > 0) await chrome.storage.sync.set({ [KEY]: local }).catch(() => {}); // 로컬을 sync로(정규화본=오염 정리). ⚠️lt>0: 아직 안 내려온 원격을 빈 fresh(taps=0)로 덮어쓰지 않게
   } catch (_) {}
 }
 
@@ -221,4 +221,16 @@ function updateBadge(on) {
 chrome.storage.local.get("petOn").then((o) => updateBadge(o.petOn !== false)).catch(() => {});
 chrome.storage.onChanged.addListener((c, area) => {
   if (area === "local" && c.petOn) updateBadge(c.petOn.newValue !== false);
+  // 다른 컴퓨터의 진행이 sync로 뒤늦게 도착하면(설치 직후엔 몇 초~분 지연) 여기서 채택.
+  // reconcile은 install/startup/최초입력 때만 돌기에, 지연 도착분은 이 리스너가 없으면 재시작까지 반영 안 됨.
+  if (area === "sync" && c[KEY]) {
+    enqueue(async () => {
+      const remote = c[KEY].newValue ? normalize(c[KEY].newValue) : null;
+      if (!remote) return;
+      const l = await chrome.storage.local.get(KEY);
+      const local = l[KEY] ? normalize(l[KEY]) : null;
+      const lt = local ? local.taps : -1;
+      if (remote.taps > lt) await chrome.storage.local.set({ [KEY]: remote }); // taps 큰 쪽(=더 많이 논 기기) 채택
+    });
+  }
 });
