@@ -6,7 +6,21 @@
 
 (() => {
   const TOP = window.top === window; // 펫은 메인 화면(최상위 프레임)에만 1마리
-  const url = (p) => chrome.runtime.getURL(p);
+
+  // 확장이 리로드/업데이트되면 이 content script는 '고아'가 되어 chrome.runtime이 무효화된다.
+  // 그 뒤 chrome-extension:// 리소스 요청은 전부 실패(net::ERR_FAILED) → 강아지가 깨진 아이콘으로 박힌다.
+  // 컨텍스트가 죽으면 강아지를 깔끔히 걷어낸다(다음 페이지 로드 때 새 스크립트가 정상 재생성).
+  let dead = false;
+  function contextAlive() {
+    try { return !!(chrome.runtime && chrome.runtime.id); } catch (_) { return false; }
+  }
+  function teardown() {
+    dead = true;
+    removePet(); // removePet은 함수 선언(호이스팅)이라 여기서 안전하게 호출됨
+  }
+  const url = (p) => {
+    try { return chrome.runtime.getURL(p); } catch (_) { teardown(); return ""; }
+  };
   const SEQ = [0, 1, 2, 3, 2, 1]; // 핑퐁
   const dogPrefix = (id) => (id === "cheese" ? "dog" : "dog-" + id);
 
@@ -144,6 +158,9 @@
       "transform:translate(-50%,-100%);will-change:left,top;";
     img = document.createElement("img");
     img.draggable = false;
+    // 프레임 로드 실패 시: 확장이 무효화된 상태면 깨진 아이콘 대신 강아지를 제거.
+    // (컨텍스트가 살아있는데 실패하는 경우는 사실상 없어, 정상 동작 중 오제거를 막는다.)
+    img.onerror = () => { if (!contextAlive()) teardown(); };
     // object-fit:contain + 하단 정렬 = 박스 비율이 프레임과 잠깐 어긋나도
     // 이미지를 뭉개지 않고 여백을 두며, 발은 항상 바닥(하단 중앙)에 붙는다.
     img.style.cssText =
@@ -234,6 +251,8 @@
 
   // 한 걸음 신호(걸음 +1 + 펫 한 걸음). 막지 않고 곁눈질만.
   function signalStep() {
+    if (dead) return;
+    if (!contextAlive()) { teardown(); return; } // 리로드 후 첫 입력에서 고아 감지 → 정리
     try {
       chrome.runtime.sendMessage({ type: "key" });
     } catch (_) {}
